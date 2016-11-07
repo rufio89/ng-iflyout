@@ -1,0 +1,36 @@
+<div class="ui container raised">
+  <form [formGroup]="searchForm" (submit)="onSubmit(searchForm.value)" class="ui form">
+    <div class="field">
+        <label for="departureAirport">Departure Airport</label>
+        <input type="text" id="departureAirport" >
+    </div>
+    <div class="field">
+      <label for="arrivalAirport">Arrival Airport</label>
+      <ng2-completer type="text" [dataService]="dataService" id="arrivalAirport" ></ng2-completer>
+    </div>
+    <div class="inline fields">
+      <label for="departDayOfWeek">Departure Day of Week</label>
+        <div *ngFor="let day of daysOfWeek.slice(0,5)">
+          <div class="field">
+            <div class="ui radio checkbox">
+              <input type="radio" formControlName="day" id="day{{day.id}}"  value="{{ day.dayName }}">
+              <label>{{ day.dayName }}</label>
+            </div>
+          </div>
+      </div>
+    </div>
+    <div class="inline fields">
+    <label for="departNumOfWeeks">Number of Weeks Looking Forward</label>
+      <div *ngFor="let week of numOfWeeks" >
+        <div class="field">
+          <div class="ui radio checkbox">
+
+            <input type="radio" formControlName="week" id="week{{week.id}}"  value="{{week.nums}}">
+            <label>{{ week.nums }}</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="ui grey basic button" type="submit">Submit</button>
+  </form>
+</div>

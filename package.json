@@ -21,6 +21,9 @@
     "@angular/platform-browser-dynamic": "~2.1.0",
     "@angular/router": "~3.1.0",
     "core-js": "^2.4.1",
+    "express": "^4.14.0",
+    "multer": "^1.2.0",
+    "ng2-completer": "^0.2.3",
     "rxjs": "5.0.0-beta.12",
     "ts-helpers": "^1.1.1",
     "zone.js": "^0.6.23"
@@ -42,5 +45,13 @@
     "tslint": "3.13.0",
     "typescript": "~2.0.3",
     "webdriver-manager": "10.2.5"
-  }
+  },
+  "description": "This project was generated with [angular-cli](https://github.com/angular/angular-cli) version 1.0.0-beta.19-3.",
+  "main": "karma.conf.js",
+  "author": "",
+  "build:nodeserver": "ng build && cp nodeserver\/* dist",
+  "build:nodeserver-prod": "ng build -prod && cp nodeserver\/* dist",
+  "serve-build" : "npm run build:nodeserver && cd dist && node index.js",
+  "serve-build-prod": "npm run build:nodeserver-prod && cd dist && node index.js"
+
 }

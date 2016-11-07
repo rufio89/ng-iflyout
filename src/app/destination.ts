@@ -1,3 +1,5 @@
-/**
- * Created by ryan on 11/6/16.
- */
+export class Destination{
+  id: number;
+  airportCode: string;
+  airportName: string;
+}

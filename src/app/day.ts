@@ -1,3 +1,4 @@
-/**
- * Created by ryan on 11/6/16.
- */
+export class Day{
+  id: number;
+  dayName: string;
+}
