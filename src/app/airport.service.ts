@@ -3,16 +3,15 @@ import {Http} from "@angular/http";
 
 @Injectable()
 export class AirportService {
-  //data: Object;
-  constructor(public http: Http) {
-    // let jsonFile: string = "./airports.json";
-    // console.log(jsonFile);
-    // return this.http.get(jsonFile)
-    //   .map(response => response.json())
-    //   .subscribe(data => this.data = data,
-    //     err => console.log(err),
-    //     () => console.log('Completed'));
+
+  constructor(public http: Http) { }
+
+  search(){
+
+    let apiUrl: string = "http://localhost:3000/api/get_airports";
+    return this.http.get(apiUrl)
+      .map(response => response.json());
+
+
   }
-
-
 }

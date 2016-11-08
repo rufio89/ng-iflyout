@@ -2,11 +2,11 @@
   <form [formGroup]="searchForm" (submit)="onSubmit(searchForm.value)" class="ui form">
     <div class="field">
         <label for="departureAirport">Departure Airport</label>
-        <input type="text" id="departureAirport" >
+      <ng2-completer formControlName="departureAirport" type="text" [dataService]="departureService" id="departureAirport" ></ng2-completer>
     </div>
     <div class="field">
       <label for="arrivalAirport">Arrival Airport</label>
-      <ng2-completer type="text" [dataService]="dataService" id="arrivalAirport" ></ng2-completer>
+      <ng2-completer formControlName="arrivalAirport" [(ngModel)]="currentDestination" type="text" [dataService]="arrivalService" id="arrivalAirport" (keypress)="keypressHandler($event)"></ng2-completer>
     </div>
     <div class="inline fields">
       <label for="departDayOfWeek">Departure Day of Week</label>
