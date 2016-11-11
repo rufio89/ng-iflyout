@@ -1,1 +1,25 @@
-/* You can add global styles to this file, and also import other style files */
+.ui.compact.segment{
+  display: inline-block!important;
+  margin-right: 5px;
+  margin-top:0;
+  margin-bottom:0;
+}
+
+.ui.compact.segment:first-child, .ui.compact.segment:last-child{
+  margin-top:0;
+  margin-bottom:0;
+}
+
+.left-airport{
+  float:left;
+}
+
+.right-airport{
+  float:right;
+  padding-left: 20px;
+}
+.right-airport i:hover{
+  color:red;
+  cursor: pointer;
+
+}

@@ -4,6 +4,7 @@ import {Day} from "../day";
 import {Week} from "../week";
 import { CompleterService, CompleterData } from 'ng2-completer';
 import {AirportService} from "../airport.service";
+import {createSecureContext} from "tls";
 
 @Component({
   selector: 'app-main-search',
@@ -14,7 +15,8 @@ export class MainSearchComponent {
   searchForm: FormGroup;
   daysOfWeek: Day[];
   numOfWeeks: Week[];
-  destinations= [];
+  destinations = [];
+  departures = [];
   private departureService: CompleterData;
   private arrivalService: CompleterData;
   private searchData = [];
@@ -47,7 +49,6 @@ export class MainSearchComponent {
 
     service.search().subscribe( res => {
       this.searchData = res;
-      console.log(this.searchData);
       this.arrivalService = completerService.local(this.searchData, 'city', 'code');
       this.departureService = completerService.local(this.searchData, 'city', 'code');
     });
@@ -59,19 +60,55 @@ export class MainSearchComponent {
 
   onSubmit(value: string): void{
     console.log("You Submitted Value: ", value);
+    console.log(this.destinations);
   }
 
-  keypressHandler(event){
+
+
+  keypressHandler(event, newValue: string, isDest: boolean){
    // console.log(event);
     if(event.charCode == 13){
-        let destination = this.currentDestination;
-        //console.log(destination);
-        this.destinations.push(destination);
-        //console.log(this.currentDestination);
-        this.currentDestination = "";
+        this.create(newValue, isDest);
     }
     console.log(this.destinations);
   }
+
+  create(newValue: string, isDest:boolean): boolean{
+    console.log("CREATE ISDEST:" + isDest);
+    if(isDest) {
+      console.log(this.destinations);
+      this.destinations.push(newValue);
+    }
+    else{
+      console.log(this.departures);
+      this.departures = [];
+      this.departures.push(newValue);
+    }
+
+    return false;
+  }
+
+  remove(name: string, isDest:boolean) : void {
+    console.log("REMOVE ISDEST:" + isDest);
+    if(isDest) {
+      var index = this.destinations.indexOf(name, 0);
+      if (index !== undefined) {
+        this.destinations.splice(index, 1);
+        console.log(this.destinations);
+      }
+    }
+    else{
+      var index = this.departures.indexOf(name, 0);
+      if (index !== undefined) {
+        this.departures.splice(index, 1);
+        console.log(this.departures);
+      }
+    }
+
+
+  }
+
+
 
 
 
