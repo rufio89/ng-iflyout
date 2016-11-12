@@ -9,7 +9,7 @@ export class DataService {
   }
 
   search(departureAirport:string, arrivalAirport:string, departureDate:string, returnDate:string){
-    let apiURL: string = "http://partners.api.skyscanner.net/apiservices/browsedates/v1.0/US/USD/EN/"+departureAirport+"/"+arrivalAirport+"/"+departureDate+"/"+returnDate+"?apiKey=if781234598447854911313432786612";
+    let apiURL: string = "http://partners.api.skyscanner.net/apiservices/browsedates/v1.0/US/USD/EN/"+departureAirport+"/"+arrivalAirport+"/"+departureDate+"/"+returnDate+"?apiKey=";
 
     return this.http.get(apiURL)
       .map(response => response.json());
