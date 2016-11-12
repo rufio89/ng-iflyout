@@ -69,13 +69,13 @@
       </div>
     </div>
     <div class="inline fields">
-    <label for="departNumOfWeeks">Number of Weeks Looking Forward</label>
-      <div *ngFor="let weekNum of numOfWeeks" >
+    <label for="departNumOfMonths">Number of Months Looking Forward</label>
+      <div *ngFor="let monthNum of numOfMonths" >
         <div class="field">
           <div class="ui radio checkbox">
 
-            <input type="radio" formControlName="week" id="week{{weekNum.id}}"  value="{{weekNum.nums}}" (click)="updateWeek(weekNum.id); calculateDates()">
-            <label>{{ weekNum.nums }}</label>
+            <input type="radio" formControlName="week" id="week{{monthNum.id}}"  value="{{monthNum.nums}}" (click)="updateMonth(monthNum.id); calculateDates()">
+            <label>{{ monthNum.nums }}</label>
           </div>
         </div>
       </div>
