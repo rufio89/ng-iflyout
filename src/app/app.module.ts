@@ -7,6 +7,7 @@ import { AppComponent } from './app.component';
 import { MainSearchComponent } from './main-search/main-search.component';
 import {Ng2CompleterModule} from "ng2-completer";
 import {AirportService} from "./airport.service";
+import {DataService} from "./data.service";
 
 @NgModule({
   declarations: [
@@ -20,7 +21,7 @@ import {AirportService} from "./airport.service";
     ReactiveFormsModule,
     Ng2CompleterModule
   ],
-  providers: [AirportService],
+  providers: [AirportService, DataService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
