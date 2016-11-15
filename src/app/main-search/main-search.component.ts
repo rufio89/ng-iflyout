@@ -113,94 +113,61 @@ export class MainSearchComponent {
     return secondDate - firstDate;
   }
 
-  convertDate(d)
-  {
-    var parts = d.split('/');
-    return new Date(parts[1], parts[0]);
-  }
+
 
   calculateDates(){
-    console.clear();
+    this.dateList = [];
     let currentDate = new Date();
     let currentDayNum = currentDate.getDay();
     let dayDiff = this.dayNumDiff(currentDayNum, this.dayOfWeek);
-    let newCurrentDate = new Date();
+    let newDat = new Date();
 
-    newCurrentDate.setDate(currentDate.getDate() + dayDiff);
-    // if(currentDate > newCurrentDate){
-    //   newCurrentDate = this.addDays(newCurrentDate, 7);
-    // }
-    let iterDate = newCurrentDate;
-    let mm = iterDate.getMonth()+1;
-    let mm2 = iterDate.getMonth() + this.numMonths;
-    if(mm2 > 12){
-      mm2 = mm2 - 12;
+    newDat.setDate(currentDate.getDate() + dayDiff);
+
+    let iterDate = newDat;
+
+    let futureDate = new Date(iterDate.getTime());
+    futureDate.setMonth(futureDate.getMonth() + this.numMonths);
+    let sunday =  new Date(iterDate.getTime());
+    sunday.setDate(sunday.getDate() + (7 - this.dayOfWeek));
+    //console.log(iterDate);
+    //console.log(futureDate);
+    
+    while(iterDate < futureDate){
+      
+      let date1 = iterDate.getFullYear() + '-' + (iterDate.getMonth()+1) +'-' + iterDate.getDate();
+      let date2 = sunday.getFullYear() + '-' +  (sunday.getMonth()+1)  +'-'+ sunday.getDate();
+      //console.log("DATE1: " + date1);
+      //console.log("DATE2: " + date2);
+      //console.log("MM: " + mm);
+      //console.log("MM2: " + mm2);
+      this.dateList.push(new DateList(date1, date2));
+      iterDate.setDate(iterDate.getDate() + 7);
+      sunday.setDate(sunday.getDate() + 7);
+      
     }
-    while(mm !=mm2){
-      if(mm>12){
-        mm=0;
+  }
+
+  requestFlights(){
+    for(let dest of this.destinations ){
+      for(let date of this.dateList){
+        // console.log(date.departureDate);
+        // console.log(date.returnDate);
+        this.dataService.search(this.departures[0], dest, date.departureDate, date.returnDate)
+        .map(
+          x=> console.log(x)
+        )
       }
-      if(mm==mm2){ break;}
-      console.log(mm);
-      console.log(mm2)
-      //get last day of month
-      let lastDate = new Date(iterDate.getFullYear(), mm,0);
-
-
-      //check if last day in month
-      let currentDayDiff = this.dayDiff(iterDate.getDate(), lastDate.getDate());
-
-      if(currentDayDiff < 7){
-        //Need to increment month by one because it is last day
-        iterDate = new Date(iterDate.getFullYear(),mm,1);
-        //console.log("II: " + iterDate);
-        let newDateDiff = this.dayNumDiff(iterDate.getDay(), this.dayOfWeek);
-        //console.log("AA: " + Number(this.addDays(iterDate, newDateDiff)));
-        //if datediff goes below 0 it brings you back into the previous month
-        let d1 = this.addDays(iterDate, newDateDiff);
-        let d2 = iterDate;
-        // console.log(d1);
-        // console.log(d2);
-        // console.log(d1 < d2);
-        if(d1 < d2){
-          newDateDiff = newDateDiff + 7;
-        }
-        // console.log(newDateDiff);
-        // console.log("iterdate before " + iterDate);
-
-        iterDate.setDate(this.addDays(iterDate, newDateDiff).getDate());
-
-        //console.log("iterdate after" + iterDate);
-        mm=mm+1;
-
-      }
-      else {
-
-        iterDate.setDate(this.addDays(iterDate, 7).getDate());
-      }
-      console.log(iterDate);
-
     }
-
-
-
-    // console.log(currentDate);
-    // console.log(currentDayNum);
-    // console.log("Calc Dates: " + this.dayOfWeek);
-    // console.log("Calc Dates: " + this.numWeeks);
-
-
   }
 
   onSubmit(value: string): void{
-    console.log(this.departures);
-    console.log(this.destinations);
-    console.log(value['day']);
-    console.log(value['week']);
-    // for(let dest of this.destinations){
-    //
-    // }
-    this.calculateDates()
+    this.calculateDates();
+    this.dataService.search("ORD", "LAX", "2016-11-24", "2016-11-30")
+    .subscribe(results => {
+          console.log(results);
+
+        });
 
   }
 
