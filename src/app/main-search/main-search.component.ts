@@ -132,9 +132,9 @@ export class MainSearchComponent {
     sunday.setDate(sunday.getDate() + (7 - this.dayOfWeek));
     //console.log(iterDate);
     //console.log(futureDate);
-    
+
     while(iterDate < futureDate){
-      
+
       let date1 = iterDate.getFullYear() + '-' + (iterDate.getMonth()+1) +'-' + iterDate.getDate();
       let date2 = sunday.getFullYear() + '-' +  (sunday.getMonth()+1)  +'-'+ sunday.getDate();
       //console.log("DATE1: " + date1);
@@ -144,7 +144,7 @@ export class MainSearchComponent {
       this.dateList.push(new DateList(date1, date2));
       iterDate.setDate(iterDate.getDate() + 7);
       sunday.setDate(sunday.getDate() + 7);
-      
+
     }
   }
 
@@ -153,21 +153,14 @@ export class MainSearchComponent {
       for(let date of this.dateList){
         // console.log(date.departureDate);
         // console.log(date.returnDate);
-        this.dataService.search(this.departures[0], dest, date.departureDate, date.returnDate)
-        .map(
-          x=> console.log(x)
-        )
+        this.dataService.search(this.departures[0], dest, date.departureDate, date.returnDate);
       }
     }
   }
 
   onSubmit(value: string): void{
     this.calculateDates();
-    this.dataService.search("ORD", "LAX", "2016-11-24", "2016-11-30")
-    .subscribe(results => {
-          console.log(results);
-
-        });
+    this.dataService.search("ORD", "LAX", "2016-11-24", "2016-11-30");
 
   }
 
