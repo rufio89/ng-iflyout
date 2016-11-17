@@ -7,6 +7,7 @@ import {AirportService} from "../airport.service";
 import {createSecureContext} from "tls";
 import {DataService} from "../data.service";
 import {DateList} from "../datelist";
+import {Flights} from "../flights";
 
 @Component({
   selector: 'app-main-search',
@@ -26,6 +27,7 @@ export class MainSearchComponent {
   dayOfWeek: number;
   numMonths: number;
   dateList: DateList[];
+  flightList: Flights[];
   private departureService: CompleterData;
   private arrivalService: CompleterData;
   private searchData = [];
@@ -35,8 +37,8 @@ export class MainSearchComponent {
 
   constructor(fb: FormBuilder, private airportService: AirportService, private completerService: CompleterService, private dataService: DataService) {
     this.searchForm = fb.group({
-      'departureAirport' : ['Chicago',Validators.required],
-      'arrivalAirport': ['Los Angeles', Validators.required],
+      'departureAirport' : ['',Validators.required],
+      'arrivalAirport': ['', Validators.required],
       'day': ['', Validators.required],
       'week': ['', Validators.required]
     });
@@ -135,8 +137,20 @@ export class MainSearchComponent {
 
     while(iterDate < futureDate){
 
-      let date1 = iterDate.getFullYear() + '-' + (iterDate.getMonth()+1) +'-' + iterDate.getDate();
-      let date2 = sunday.getFullYear() + '-' +  (sunday.getMonth()+1)  +'-'+ sunday.getDate();
+      let date1 = "";
+      let date2 = "";
+      if(iterDate.getDate()>9) {
+        date1 = iterDate.getFullYear() + '-' + (iterDate.getMonth() + 1) + '-' + iterDate.getDate();
+      }
+      else{
+        date1 = iterDate.getFullYear() + '-' + (iterDate.getMonth() + 1) + '-0' + iterDate.getDate();
+      }
+      if(sunday.getDate() > 9) {
+        date2 = sunday.getFullYear() + '-' + (sunday.getMonth() + 1) + '-' + sunday.getDate();
+      }
+      else{
+        date2 = sunday.getFullYear() + '-' + (sunday.getMonth() + 1) + '-0' + sunday.getDate();
+      }
       //console.log("DATE1: " + date1);
       //console.log("DATE2: " + date2);
       //console.log("MM: " + mm);
@@ -148,20 +162,65 @@ export class MainSearchComponent {
     }
   }
 
+  parseJsonDate(jsonDateString){
+    let d1 = new Date(jsonDateString);
+    let year = d1.getFullYear();
+    let month = d1.getMonth() + 1;
+    let day = d1.getDate();
+    let hours = d1.getHours();
+    hours = (hours+24-2)%24;
+    let minutes = d1.getMinutes();
+    var mid='AM';
+    if(hours==0){ //At 00 hours we need to show 12 am
+      hours=12;
+    }
+    else if(hours>12)
+    {
+      hours=hours%12;
+      mid='PM';
+    }
+    let returnDay = (day > 9) ? month + "/" + day + "/" + year: month + "/0" + day + "/" + year ;
+    let returnTime = (minutes > 9) ? hours + ":" +  minutes  + " " +  mid: hours + ":0" +  minutes  + " " +  mid;
+    let fullReturnDate = returnDay + " " + returnTime;
+    return fullReturnDate;
+  }
+
+  buildChart(){
+    console.log(this.flightList);
+  }
+
   requestFlights(){
+    this.flightList = [];
     for(let dest of this.destinations ){
       for(let date of this.dateList){
         // console.log(date.departureDate);
         // console.log(date.returnDate);
-        this.dataService.search(this.departures[0], dest, date.departureDate, date.returnDate);
+        this.dataService.search(this.departures[0], dest, date.departureDate, date.returnDate)
+        .subscribe(
+          data => {
+           this.flightList.push(
+             new Flights(data["Quotes"][0]["MinPrice"],
+                          data["Carriers"][0]["Name"],
+                          this.parseJsonDate(data["Quotes"][0]["QuoteDateTime"]),
+                          this.departures[0],
+                          dest));
+          },
+          err => console.log(err),
+          () => {
+            if(date == this.dateList[this.dateList.length-1]) {
+              this.buildChart();
+            }
+          }
+        );
       }
     }
+
   }
 
   onSubmit(value: string): void{
     this.calculateDates();
-    this.dataService.search("ORD", "LAX", "2016-11-24", "2016-11-30");
-
+    this.requestFlights();
+    console.log(this.flightList);
   }
 
 

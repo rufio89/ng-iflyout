@@ -10,7 +10,7 @@
     </div>
     <div class="field">
         <label for="departureAirport">Departure Airport</label>
-      <ng2-completer #newDep formControlName="departureAirport" type="text" [dataService]="departureService" id="departureAirport"  (keyup.enter)="keypressHandler($event, newDep.value, false); newDep.value = ''"></ng2-completer>
+      <ng2-completer #newDep formControlName="departureAirport" type="text" [dataService]="departureService" id="departureAirport"  placeholder="Chicago" (keyup.enter)="keypressHandler($event, newDep.value, false); newDep.value = ''"></ng2-completer>
     </div>
     <div id="departureList">
       <div *ngFor="let dep of departures" class='ui compact segment'>
@@ -31,7 +31,7 @@
     </div>
     <div class="field">
       <label for="arrivalAirport">Arrival Airports (You can enter more than one)</label>
-      <ng2-completer #newDest formControlName="arrivalAirport" [(ngModel)]="currentDestination" type="text" [dataService]="arrivalService" placeholder ="New Orleans" id="arrivalAirport" (keyup.enter)="keypressHandler($event, newDest.value, true); newDest.value = ''"></ng2-completer>
+      <ng2-completer #newDest formControlName="arrivalAirport" [(ngModel)]="currentDestination" type="text" [dataService]="arrivalService" placeholder ="Los Angeles" id="arrivalAirport" (keyup.enter)="keypressHandler($event, newDest.value, true); newDest.value = ''"></ng2-completer>
     </div>
     <div id="arrivalList">
       <div *ngFor="let dest of destinations" class='ui compact segment'>
