@@ -83,3 +83,7 @@
     <button class="ui grey basic button" (click)="onSubmit(searchForm.value)" type="submit">Submit</button>
   </form>
 </div>
+
+<app-search-results [flightList]="flightList" [options]="options">
+
+</app-search-results>

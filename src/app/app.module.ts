@@ -5,14 +5,17 @@ import { HttpModule, JsonpModule} from '@angular/http';
 
 import { AppComponent } from './app.component';
 import { MainSearchComponent } from './main-search/main-search.component';
+import { SearchResultsComponent } from './search-results/search-results.component';
 import {Ng2CompleterModule} from "ng2-completer";
 import {AirportService} from "./airport.service";
 import {DataService} from "./data.service";
+import {ChartModule} from "angular2-highcharts";
 
 @NgModule({
   declarations: [
     AppComponent,
-    MainSearchComponent
+    MainSearchComponent,
+    SearchResultsComponent
   ],
   imports: [
     BrowserModule,
@@ -20,7 +23,8 @@ import {DataService} from "./data.service";
     HttpModule,
     JsonpModule,
     ReactiveFormsModule,
-    Ng2CompleterModule
+    Ng2CompleterModule,
+    ChartModule,
   ],
   providers: [AirportService, DataService],
   bootstrap: [AppComponent]

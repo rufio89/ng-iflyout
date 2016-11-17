@@ -14,7 +14,7 @@ export class DataService {
     headers.append('Access-Control-Allow-Origin', '*');
     headers.append('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     headers.append('Access-Control-Allow-Headers', 'x-id');
-    let apiURL: string = "http://partners.api.skyscanner.net/apiservices/browsedates/v1.0/US/USD/EN/" + departureAirport + "/" + arrivalAirport + "/" + departureDate + "/" + returnDate + "?apiKey=if781234598447854911313432786612";
+    let apiURL: string = "http://partners.api.skyscanner.net/apiservices/browsedates/v1.0/US/USD/EN/" + departureAirport + "/" + arrivalAirport + "/" + departureDate + "/" + returnDate + "?apiKey=";
     return this.http.get(apiURL)
       .map(res => res.json());
 

@@ -4,10 +4,10 @@ import {Day} from "../day";
 import {Week} from "../week";
 import { CompleterService, CompleterData } from 'ng2-completer';
 import {AirportService} from "../airport.service";
-import {createSecureContext} from "tls";
 import {DataService} from "../data.service";
 import {DateList} from "../datelist";
-import {Flights} from "../flights";
+
+import {FlightList} from "../flightlist";
 
 @Component({
   selector: 'app-main-search',
@@ -27,7 +27,11 @@ export class MainSearchComponent {
   dayOfWeek: number;
   numMonths: number;
   dateList: DateList[];
-  flightList: Flights[];
+  flightList: FlightList;
+  prices: Array<number>;
+  dates: Array<string>;
+  options: Object;
+
   private departureService: CompleterData;
   private arrivalService: CompleterData;
   private searchData = [];
@@ -136,21 +140,9 @@ export class MainSearchComponent {
     //console.log(futureDate);
 
     while(iterDate < futureDate){
+      let date1 = this.getDateString(iterDate);
+      let date2 = this.getDateString(sunday);
 
-      let date1 = "";
-      let date2 = "";
-      if(iterDate.getDate()>9) {
-        date1 = iterDate.getFullYear() + '-' + (iterDate.getMonth() + 1) + '-' + iterDate.getDate();
-      }
-      else{
-        date1 = iterDate.getFullYear() + '-' + (iterDate.getMonth() + 1) + '-0' + iterDate.getDate();
-      }
-      if(sunday.getDate() > 9) {
-        date2 = sunday.getFullYear() + '-' + (sunday.getMonth() + 1) + '-' + sunday.getDate();
-      }
-      else{
-        date2 = sunday.getFullYear() + '-' + (sunday.getMonth() + 1) + '-0' + sunday.getDate();
-      }
       //console.log("DATE1: " + date1);
       //console.log("DATE2: " + date2);
       //console.log("MM: " + mm);
@@ -160,6 +152,28 @@ export class MainSearchComponent {
       sunday.setDate(sunday.getDate() + 7);
 
     }
+  }
+
+  getDateString(dat): string {
+    let date1 = "";
+    if(dat.getDate()>9) {
+      if((dat.getMonth() + 1) > 9) {
+        date1 = dat.getFullYear() + '-' + (dat.getMonth() + 1) + '-' + dat.getDate();
+      }
+      else{
+        date1 = dat.getFullYear() + '-0' + (dat.getMonth() + 1) + '-' + dat.getDate();
+      }
+    }
+    else{
+      if((dat.getMonth() + 1) > 9) {
+        date1 = dat.getFullYear() + '-' + (dat.getMonth() + 1) + '-0' + dat.getDate();
+      }
+      else{
+        date1 = dat.getFullYear() + '-0' + (dat.getMonth() + 1) + '-0' + dat.getDate();
+      }
+    }
+
+    return date1;
   }
 
   parseJsonDate(jsonDateString){
@@ -186,11 +200,31 @@ export class MainSearchComponent {
   }
 
   buildChart(){
-    console.log(this.flightList);
+    this.dates = this.dateList.map(function (a) {
+      return a.departureDate
+    });
+    console.log(this.prices);
+    console.log(this.dates);
+    this.options = {
+
+      title: {
+        text: 'Flights'
+      },
+
+      xAxis: {
+        categories: this.dates
+      },
+
+      series: this.flightList.getSeriesData()
+    };
+    //console.dir("SDATA: " + this.flightList.getSeriesData());
+
   }
 
   requestFlights(){
-    this.flightList = [];
+    this.flightList = new FlightList;
+    this.dates = [];
+    this.prices = [];
     for(let dest of this.destinations ){
       for(let date of this.dateList){
         // console.log(date.departureDate);
@@ -198,16 +232,21 @@ export class MainSearchComponent {
         this.dataService.search(this.departures[0], dest, date.departureDate, date.returnDate)
         .subscribe(
           data => {
-           this.flightList.push(
-             new Flights(data["Quotes"][0]["MinPrice"],
+            //departureAirport, arrivalAirport, price, airline, priceTime, departureTime
+           this.flightList.addFlight(
+             this.departures[0],
+             dest,
+             data["Quotes"][0]["MinPrice"],
                           data["Carriers"][0]["Name"],
                           this.parseJsonDate(data["Quotes"][0]["QuoteDateTime"]),
-                          this.departures[0],
-                          dest));
+                          date.departureDate);
+
           },
           err => console.log(err),
           () => {
-            if(date == this.dateList[this.dateList.length-1]) {
+            console.log(dest);
+            console.log(this.destinations[this.destinations.length-1])
+            if(dest == this.destinations[this.destinations.length-1] && date == this.dateList[this.dateList.length-1]) {
               this.buildChart();
             }
           }
