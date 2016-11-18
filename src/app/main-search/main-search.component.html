@@ -1,10 +1,39 @@
 <div id="flight-form" class="ui container raised">
   <form [formGroup]="searchForm"  class="ui form">
+    <div class="inline fields">
+      <label for="departDayOfWeek">Departure Day of Week (return Sunday)</label>
+      <div *ngFor="let day of daysOfWeek.slice(1,6)">
+        <div class="field">
+          <div class="ui radio checkbox">
+            <input type="radio" formControlName="day" id="day{{day.id}}" value="{{ day.dayName }}" (click)="updateDay(day.id)">
+            <label>{{ day.dayName }}</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="!week.valid && week.touched">
+      <div class="ui form error">
+        <div class="ui error message">
+          <p>Enter a valid number of weeks</p>
+        </div>
+      </div>
+    </div>
+    <div class="inline fields">
+      <label for="departNumOfMonths">Number of Months Looking Forward</label>
+      <div *ngFor="let monthNum of numOfMonths" >
+        <div class="field">
+          <div class="ui radio checkbox">
 
+            <input type="radio" formControlName="week" id="week{{monthNum.id}}"  value="{{monthNum.nums}}" (click)="updateMonth(monthNum.id)">
+            <label>{{ monthNum.nums }}</label>
+          </div>
+        </div>
+      </div>
+    </div>
     <div *ngIf="departures.length==0 && departureAirport.touched">
       <div class="ui form error">
         <div class="ui error message">
-         <p>Enter a valid Departure Airport</p>
+          <p>Enter a valid Departure Airport</p>
         </div>
       </div>
     </div>
@@ -50,37 +79,7 @@
         </div>
       </div>
     </div>
-    <div class="inline fields">
-      <label for="departDayOfWeek">Departure Day of Week (return Sunday)</label>
-        <div *ngFor="let day of daysOfWeek.slice(0,5)">
-          <div class="field">
-            <div class="ui radio checkbox">
-              <input type="radio" formControlName="day" id="day{{day.id}}" value="{{ day.dayName }}" (click)="updateDay(day.id)">
-              <label>{{ day.dayName }}</label>
-            </div>
-          </div>
-      </div>
-    </div>
-    <div *ngIf="!week.valid && week.touched">
-      <div class="ui form error">
-        <div class="ui error message">
-          <p>Enter a valid number of weeks</p>
-        </div>
-      </div>
-    </div>
-    <div class="inline fields">
-    <label for="departNumOfMonths">Number of Months Looking Forward</label>
-      <div *ngFor="let monthNum of numOfMonths" >
-        <div class="field">
-          <div class="ui radio checkbox">
-
-            <input type="radio" formControlName="week" id="week{{monthNum.id}}"  value="{{monthNum.nums}}" (click)="updateMonth(monthNum.id); calculateDates()">
-            <label>{{ monthNum.nums }}</label>
-          </div>
-        </div>
-      </div>
-    </div>
-    <button class="ui grey basic button" (click)="onSubmit(searchForm.value)" type="submit">Submit</button>
+    <!--<button class="ui grey basic button" (click)="onSubmit(searchForm.value)" type="submit">Submit</button>-->
   </form>
 </div>
 

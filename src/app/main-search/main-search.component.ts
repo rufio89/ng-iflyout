@@ -32,6 +32,7 @@ export class MainSearchComponent {
   dates: Array<string>;
   options: Object;
 
+
   private departureService: CompleterData;
   private arrivalService: CompleterData;
   private searchData = [];
@@ -40,6 +41,7 @@ export class MainSearchComponent {
 
 
   constructor(fb: FormBuilder, private airportService: AirportService, private completerService: CompleterService, private dataService: DataService) {
+    this.flightList = new FlightList;
     this.searchForm = fb.group({
       'departureAirport' : ['',Validators.required],
       'arrivalAirport': ['', Validators.required],
@@ -47,14 +49,16 @@ export class MainSearchComponent {
       'week': ['', Validators.required]
     });
 
+
+
     this.daysOfWeek = [
+      {id: 0, dayName: 'Sunday'},
       {id: 1, dayName: 'Monday'},
       {id: 2, dayName: 'Tuesday'},
-      {id: 3, dayName:  'Wednesday'},
+      {id: 3, dayName: 'Wednesday'},
       {id: 4, dayName: 'Thursday'},
       {id: 5, dayName: 'Friday'},
-      {id: 6, dayName: 'Saturday'},
-      {id: 7, dayName: 'Sunday'}
+      {id: 6, dayName: 'Saturday'}
     ];
     this.numOfMonths = [
       {id:1, nums:1},
@@ -78,16 +82,21 @@ export class MainSearchComponent {
   }
 
   updateDay(dayNum: number){
-    console.log(this.numMonths);
+    console.log(this.dayOfWeek);
     this.dayOfWeek = dayNum;
-    if(this.numMonths!== undefined){
-      this.calculateDates();
+    console.log(this.dayOfWeek);
+    this.calculateDates();
+    if(this.destinations.length > 0) {
+      this.refreshFlights();
     }
-
   }
 
   updateMonth(monthNum: number){
     this.numMonths = monthNum;
+    this.calculateDates();
+    if(this.destinations.length > 0) {
+      this.refreshFlights();
+    }
   }
 
   addDays(day: Date, days: number)
@@ -131,6 +140,12 @@ export class MainSearchComponent {
     newDat.setDate(currentDate.getDate() + dayDiff);
 
     let iterDate = newDat;
+    console.log(iterDate.getDay());
+    console.log(this.dayOfWeek);
+    if(iterDate.getDay() <= currentDate.getDay() ){
+      console.log("IN HERE");
+      iterDate.setDate(iterDate.getDate() + 7);
+    }
 
     let futureDate = new Date(iterDate.getTime());
     futureDate.setMonth(futureDate.getMonth() + this.numMonths);
@@ -199,29 +214,92 @@ export class MainSearchComponent {
     return fullReturnDate;
   }
 
-  buildChart(){
+  buildChart(dest, remove){
     this.dates = this.dateList.map(function (a) {
       return a.departureDate
     });
-    console.log(this.prices);
-    console.log(this.dates);
-    this.options = {
+    if(remove==1){
+      this.options = {
 
-      title: {
-        text: 'Flights'
-      },
+        title: {
+          text: 'Flights'
+        },
 
-      xAxis: {
-        categories: this.dates
-      },
+        xAxis: {
+          categories: this.dates
+        },
 
-      series: this.flightList.getSeriesData()
-    };
-    //console.dir("SDATA: " + this.flightList.getSeriesData());
+        series: this.flightList.removeSeriesData(dest)
+      };
+    }
+    if(remove==2){
+      this.options = {
+
+        title: {
+          text: 'Flights'
+        },
+
+        xAxis: {
+          categories: this.dates
+        },
+
+        series: this.flightList.updateSeriesData(dest)
+      };
+    }
+    if(remove==3){
+      this.options = {
+
+        title: {
+          text: 'Flights'
+        },
+
+        xAxis: {
+          categories: this.dates
+        },
+
+        series: this.flightList.refreshSeriesData()
+      };
+    }
+
+  }
+  requestFlights(dest){
+
+    this.dates = [];
+    this.prices = [];
+
+      for(let date of this.dateList){
+        this.dataService.search(this.departures[0], dest, date.departureDate, date.returnDate)
+        .subscribe(
+          data => {
+           this.flightList.addFlight(
+              this.departures[0],
+              dest,
+              data["Quotes"][0]["MinPrice"],
+              data["Carriers"][0]["Name"],
+              this.parseJsonDate(data["Quotes"][0]["QuoteDateTime"]),
+              date.departureDate,
+              date.returnDate
+           );
+          //console.log(data);
+          },
+          err => console.log(err),
+          () => {
+
+            if(dest == this.destinations[this.destinations.length-1] && date == this.dateList[this.dateList.length-1]) {
+              // console.log("THIS.DESTINATIONS");
+              // console.dir(this.destinations);
+              // console.log("THIS.DATELIST");
+              // console.dir(this.dateList);
+              this.buildChart(dest, 2);
+            }
+          }
+        );
+      }
+
 
   }
 
-  requestFlights(){
+  refreshFlights(){
     this.flightList = new FlightList;
     this.dates = [];
     this.prices = [];
@@ -230,59 +308,70 @@ export class MainSearchComponent {
         // console.log(date.departureDate);
         // console.log(date.returnDate);
         this.dataService.search(this.departures[0], dest, date.departureDate, date.returnDate)
-        .subscribe(
-          data => {
-            //departureAirport, arrivalAirport, price, airline, priceTime, departureTime
-           this.flightList.addFlight(
-             this.departures[0],
-             dest,
-             data["Quotes"][0]["MinPrice"],
-                          data["Carriers"][0]["Name"],
-                          this.parseJsonDate(data["Quotes"][0]["QuoteDateTime"]),
-                          date.departureDate);
+          .subscribe(
+            data => {
+              //departureAirport, arrivalAirport, price, airline, priceTime, departureTime
+              this.flightList.addFlight(
+                this.departures[0],
+                dest,
+                data["Quotes"][0]["MinPrice"],
+                data["Carriers"][0]["Name"],
+                this.parseJsonDate(data["Quotes"][0]["QuoteDateTime"]),
+                date.departureDate,
+                date.returnDate);
 
-          },
-          err => console.log(err),
-          () => {
-            console.log(dest);
-            console.log(this.destinations[this.destinations.length-1])
-            if(dest == this.destinations[this.destinations.length-1] && date == this.dateList[this.dateList.length-1]) {
-              this.buildChart();
+            },
+            err => console.log(err),
+            () => {
+              console.log(dest);
+              console.log(this.destinations[this.destinations.length-1])
+              if(dest == this.destinations[this.destinations.length-1] && date == this.dateList[this.dateList.length-1]) {
+                this.buildChart(dest, 3);
+              }
             }
-          }
-        );
+          );
       }
     }
 
   }
 
-  onSubmit(value: string): void{
-    this.calculateDates();
-    this.requestFlights();
-    console.log(this.flightList);
-  }
+  // onSubmit(value: string): void{
+  //   this.calculateDates();
+  //   this.requestFlights();
+  //   console.log(this.flightList);
+  // }
 
 
 
   keypressHandler(event, newValue: string, isDest: boolean){
     this.create(newValue, isDest);
-    //console.log(this.destinations);
+
   }
 
-  create(newValue: string, isDest:boolean): boolean{
+  create(newValue: string, isDest:boolean){
     //console.log("CREATE ISDEST:" + isDest);
     if(isDest) {
-      //console.log(this.destinations);
+      console.log("this dest" + this.destinations.length);
+      console.log(this.destinations.length ==0 );
       this.destinations.push(newValue);
+      if(this.destinations.length ==1 ){
+        console.log("HEHEHE");
+        this.requestFlights(newValue);
+      }
+      else{
+        this.requestFlights(newValue);
+      }
     }
     else{
-      //console.log(this.departures);
       this.departures = [];
-      this.departures.push(newValue);
+      if(this.destinations.length > 0){
+        this.departures.push(newValue);
+        this.refreshFlights();
+      }
+      else {
+        this.departures.push(newValue);
+      }
     }
-
-
-    return false;
   }
 
   remove(name: string, isDest:boolean) : void {
@@ -291,8 +380,10 @@ export class MainSearchComponent {
       var index = this.destinations.indexOf(name, 0);
       if (index !== undefined) {
         this.destinations.splice(index, 1);
-        //console.log(this.destinations);
+        console.log("HEreNOWDOJD");
+        this.buildChart(name, 1);
       }
+
     }
     else{
       var index = this.departures.indexOf(name, 0);
