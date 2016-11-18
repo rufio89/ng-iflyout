@@ -9,8 +9,9 @@ export class Flight{
   priceTime: string;
   departureDate: string;
   returnDate: string;
+  url: string;
 
-  constructor(departureAirport, arrivalAirport, price, airline, priceTime, departureDate, returnDate){
+  constructor(departureAirport, arrivalAirport, price, airline, priceTime, departureDate, returnDate, url){
     this.departureAirport = departureAirport;
     this.arrivalAirport = arrivalAirport;
     this.price = price;
@@ -18,6 +19,7 @@ export class Flight{
     this.priceTime = priceTime;
     this.departureDate = departureDate;
     this.returnDate = returnDate;
+    this.url = url;
 
   }
 

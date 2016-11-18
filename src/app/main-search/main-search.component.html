@@ -58,6 +58,13 @@
         </div>
       </div>
     </div>
+    <div *ngIf="sameAirport==true">
+      <div class="ui form error">
+        <div class="ui error message">
+          <p>Can't have same departure and arrival airports.</p>
+        </div>
+      </div>
+    </div>
     <div class="field">
       <label for="arrivalAirport">Arrival Airports (You can enter more than one)</label>
       <ng2-completer #newDest formControlName="arrivalAirport" [(ngModel)]="currentDestination" type="text" [dataService]="arrivalService" placeholder ="Los Angeles" id="arrivalAirport" (keyup.enter)="keypressHandler($event, newDest.value, true); newDest.value = ''"></ng2-completer>

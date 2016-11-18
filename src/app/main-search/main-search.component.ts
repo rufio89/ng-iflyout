@@ -8,6 +8,7 @@ import {DataService} from "../data.service";
 import {DateList} from "../datelist";
 
 import {FlightList} from "../flightlist";
+import {forEach} from "@angular/router/src/utils/collection";
 
 @Component({
   selector: 'app-main-search',
@@ -31,6 +32,7 @@ export class MainSearchComponent {
   prices: Array<number>;
   dates: Array<string>;
   options: Object;
+  sameAirport: boolean = false;
 
 
   private departureService: CompleterData;
@@ -229,6 +231,19 @@ export class MainSearchComponent {
           categories: this.dates
         },
 
+        plotOptions: {
+          series: {
+            cursor: 'pointer',
+            point: {
+              events: {
+                click: function () {
+                  location.href = this.options.url;
+                }
+              }
+            }
+          }
+        },
+
         series: this.flightList.removeSeriesData(dest)
       };
     }
@@ -241,6 +256,31 @@ export class MainSearchComponent {
 
         xAxis: {
           categories: this.dates
+        },
+        tooltip: {
+          formatter: function () {
+            let s = "";
+            this.points.sort(function(a,b) {return (a.y < b.y) ? 1 : ((b.y < a.y) ? -1 : 0);} );
+            forEach(this.points, function(key, value){
+              s+='<div style="color:' + key.color + ';">' + key.point.destination + ' -<b>$' + key.point.y + '</b> - ' + key.point.airline + '<br /></div>';
+            })
+            return s;
+            },
+          shared: true
+        },
+
+        plotOptions: {
+          series: {
+            cursor: 'pointer',
+            point: {
+              events: {
+                click: function (event) {
+                  console.dir(this.options);
+                  window.open(this.options.url, "_blank");
+                }
+              }
+            }
+          }
         },
 
         series: this.flightList.updateSeriesData(dest)
@@ -257,11 +297,33 @@ export class MainSearchComponent {
           categories: this.dates
         },
 
+        plotOptions: {
+          series: {
+            cursor: 'pointer',
+            point: {
+              events: {
+                click: function (event) {
+                  alert(event);
+                  console.dir(event);
+                  // window.open(this.options.url, "_blank");
+                }
+              }
+            }
+          }
+        },
+
         series: this.flightList.refreshSeriesData()
       };
     }
 
   }
+
+
+  getUrlString(departureDate, returnDate, dest){
+    return this.departures[0] + "/" + dest + "/" + departureDate.substr(2,2) + "" + departureDate.substr(5,2) + "" +  departureDate.substr(8,2) +  "/" + returnDate.substr(2,2) +  "" + returnDate.substr(5,2) + "" + returnDate.substr(8,2) + "";
+  }
+
+
   requestFlights(dest){
 
     this.dates = [];
@@ -271,25 +333,23 @@ export class MainSearchComponent {
         this.dataService.search(this.departures[0], dest, date.departureDate, date.returnDate)
         .subscribe(
           data => {
-           this.flightList.addFlight(
+            let url = "https://www.skyscanner.com/transport/flights/"  + this.getUrlString(date.departureDate, date.returnDate, dest);
+            this.flightList.addFlight(
               this.departures[0],
               dest,
               data["Quotes"][0]["MinPrice"],
               data["Carriers"][0]["Name"],
               this.parseJsonDate(data["Quotes"][0]["QuoteDateTime"]),
               date.departureDate,
-              date.returnDate
+              date.returnDate,
+              url
            );
-          //console.log(data);
+
           },
           err => console.log(err),
           () => {
 
             if(dest == this.destinations[this.destinations.length-1] && date == this.dateList[this.dateList.length-1]) {
-              // console.log("THIS.DESTINATIONS");
-              // console.dir(this.destinations);
-              // console.log("THIS.DATELIST");
-              // console.dir(this.dateList);
               this.buildChart(dest, 2);
             }
           }
@@ -310,7 +370,7 @@ export class MainSearchComponent {
         this.dataService.search(this.departures[0], dest, date.departureDate, date.returnDate)
           .subscribe(
             data => {
-              //departureAirport, arrivalAirport, price, airline, priceTime, departureTime
+              let url = "https://www.skyscanner.com/transport/flights/" + this.getUrlString(date.departureDate, date.returnDate, dest);
               this.flightList.addFlight(
                 this.departures[0],
                 dest,
@@ -318,13 +378,13 @@ export class MainSearchComponent {
                 data["Carriers"][0]["Name"],
                 this.parseJsonDate(data["Quotes"][0]["QuoteDateTime"]),
                 date.departureDate,
-                date.returnDate);
+                date.returnDate,
+                url
+              );
 
             },
             err => console.log(err),
             () => {
-              console.log(dest);
-              console.log(this.destinations[this.destinations.length-1])
               if(dest == this.destinations[this.destinations.length-1] && date == this.dateList[this.dateList.length-1]) {
                 this.buildChart(dest, 3);
               }
@@ -335,11 +395,7 @@ export class MainSearchComponent {
 
   }
 
-  // onSubmit(value: string): void{
-  //   this.calculateDates();
-  //   this.requestFlights();
-  //   console.log(this.flightList);
-  // }
+
 
 
 
@@ -349,17 +405,21 @@ export class MainSearchComponent {
   }
 
   create(newValue: string, isDest:boolean){
-    //console.log("CREATE ISDEST:" + isDest);
+
     if(isDest) {
-      console.log("this dest" + this.destinations.length);
-      console.log(this.destinations.length ==0 );
-      this.destinations.push(newValue);
-      if(this.destinations.length ==1 ){
-        console.log("HEHEHE");
-        this.requestFlights(newValue);
+      if(newValue==this.departures[0]){
+        this.sameAirport = true;
       }
-      else{
-        this.requestFlights(newValue);
+      else {
+        this.sameAirport = false;
+        this.destinations.push(newValue);
+        if (this.destinations.length == 1) {
+
+          this.requestFlights(newValue);
+        }
+        else {
+          this.requestFlights(newValue);
+        }
       }
     }
     else{
@@ -380,7 +440,6 @@ export class MainSearchComponent {
       var index = this.destinations.indexOf(name, 0);
       if (index !== undefined) {
         this.destinations.splice(index, 1);
-        console.log("HEreNOWDOJD");
         this.buildChart(name, 1);
       }
 
@@ -389,7 +448,6 @@ export class MainSearchComponent {
       var index = this.departures.indexOf(name, 0);
       if (index !== undefined) {
         this.departures.splice(index, 1);
-       // console.log(this.departures);
       }
     }
 
