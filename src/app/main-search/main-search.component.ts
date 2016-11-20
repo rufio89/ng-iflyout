@@ -6,10 +6,10 @@ import { CompleterService, CompleterData } from 'ng2-completer';
 import {AirportService} from "../airport.service";
 import {DataService} from "../data.service";
 import {DateList} from "../datelist";
-
+import {Observable} from 'rxjs/Observable';
 import {FlightList} from "../flightlist";
 import {forEach} from "@angular/router/src/utils/collection";
-
+import "rxjs/add/observable/forkJoin";
 @Component({
   selector: 'app-main-search',
   templateUrl: './main-search.component.html',
@@ -33,6 +33,8 @@ export class MainSearchComponent {
   dates: Array<string>;
   options: Object;
   sameAirport: boolean = false;
+  dataError: string = "";
+  isDataError: boolean = false;
 
 
   private departureService: CompleterData;
@@ -84,9 +86,7 @@ export class MainSearchComponent {
   }
 
   updateDay(dayNum: number){
-    console.log(this.dayOfWeek);
     this.dayOfWeek = dayNum;
-    console.log(this.dayOfWeek);
     this.calculateDates();
     if(this.destinations.length > 0) {
       this.refreshFlights();
@@ -142,10 +142,7 @@ export class MainSearchComponent {
     newDat.setDate(currentDate.getDate() + dayDiff);
 
     let iterDate = newDat;
-    console.log(iterDate.getDay());
-    console.log(this.dayOfWeek);
     if(iterDate.getDay() <= currentDate.getDay() ){
-      console.log("IN HERE");
       iterDate.setDate(iterDate.getDate() + 7);
     }
 
@@ -153,17 +150,12 @@ export class MainSearchComponent {
     futureDate.setMonth(futureDate.getMonth() + this.numMonths);
     let sunday =  new Date(iterDate.getTime());
     sunday.setDate(sunday.getDate() + (7 - this.dayOfWeek));
-    //console.log(iterDate);
-    //console.log(futureDate);
+
 
     while(iterDate < futureDate){
       let date1 = this.getDateString(iterDate);
       let date2 = this.getDateString(sunday);
 
-      //console.log("DATE1: " + date1);
-      //console.log("DATE2: " + date2);
-      //console.log("MM: " + mm);
-      //console.log("MM2: " + mm2);
       this.dateList.push(new DateList(date1, date2));
       iterDate.setDate(iterDate.getDate() + 7);
       sunday.setDate(sunday.getDate() + 7);
@@ -230,14 +222,26 @@ export class MainSearchComponent {
         xAxis: {
           categories: this.dates
         },
+        tooltip: {
+          formatter: function () {
+            let s = "";
+            this.points.sort(function(a,b) {return (a.y < b.y) ? 1 : ((b.y < a.y) ? -1 : 0);} );
+            forEach(this.points, function(key, value){
+              s+='<div style="color:' + key.color + ';">' + key.point.destination + ' -<b>$' + key.point.y + '</b> - ' + key.point.airline + '<br /></div>';
+            })
+            return s;
+          },
+          shared: true
+        },
 
         plotOptions: {
           series: {
             cursor: 'pointer',
             point: {
               events: {
-                click: function () {
-                  location.href = this.options.url;
+                click: function (event) {
+                  console.dir(this.options);
+                  window.open(this.options.url, "_blank");
                 }
               }
             }
@@ -296,6 +300,17 @@ export class MainSearchComponent {
         xAxis: {
           categories: this.dates
         },
+        tooltip: {
+          formatter: function () {
+            let s = "";
+            this.points.sort(function(a,b) {return (a.y < b.y) ? 1 : ((b.y < a.y) ? -1 : 0);} );
+            forEach(this.points, function(key, value){
+              s+='<div style="color:' + key.color + ';">' + key.point.destination + ' -<b>$' + key.point.y + '</b> - ' + key.point.airline + '<br /></div>';
+            })
+            return s;
+          },
+          shared: true
+        },
 
         plotOptions: {
           series: {
@@ -303,9 +318,8 @@ export class MainSearchComponent {
             point: {
               events: {
                 click: function (event) {
-                  alert(event);
-                  console.dir(event);
-                  // window.open(this.options.url, "_blank");
+                  console.dir(this.options);
+                  window.open(this.options.url, "_blank");
                 }
               }
             }
@@ -325,73 +339,83 @@ export class MainSearchComponent {
 
 
   requestFlights(dest){
+    let newDest = [];
+    newDest.push(dest);
 
-    this.dates = [];
-    this.prices = [];
+      //
+      // for(let date of this.dateList){
+        Observable.forkJoin(this.dataService.search(this.dateList, this.departures[0], dest, newDest, false))
+          .subscribe(
+            data =>{
+              // console.log(data);
+              for(let d of data) {
+                // console.log(d["Places"][0]["IataCode"]);
+                // console.log(d["Dates"]["OutboundDates"][0]["PartialDate"]);
+                // console.log(d["Dates"]["InboundDates"][0]["PartialDate"]);
+                let url = "https://www.skyscanner.com/transport/flights/" + this.getUrlString(d["Dates"]["OutboundDates"][0]["PartialDate"], d["Dates"]["InboundDates"][0]["PartialDate"], dest);
+                  this.isDataError = false;
+                  this.flightList.addFlight(
+                    this.departures[0],
+                    dest,
+                    d["Quotes"][0]["MinPrice"],
+                    d["Carriers"][0]["Name"],
+                    this.parseJsonDate(d["Quotes"][0]["QuoteDateTime"]),
+                    d["Dates"]["OutboundDates"][0]["PartialDate"],
+                    d["Dates"]["InboundDates"][0]["PartialDate"],
+                    url
+                  );
+              }
+              this.buildChart(dest, 2);
 
-      for(let date of this.dateList){
-        this.dataService.search(this.departures[0], dest, date.departureDate, date.returnDate)
-        .subscribe(
-          data => {
-            let url = "https://www.skyscanner.com/transport/flights/"  + this.getUrlString(date.departureDate, date.returnDate, dest);
+
+            }
+          )
+   }
+
+
+
+
+
+  refreshFlights(){
+    this.flightList = FlightList[0];
+    this.flightList = new FlightList;
+    console.log("After remove flightlist");
+    console.dir(this.flightList);
+    let newDest: string = "";
+    Observable.forkJoin(this.dataService.search(this.dateList, this.departures[0], "", this.destinations, true))
+      .subscribe(
+        data =>{
+          console.log(data);
+          console.log("Destinations: " + this.destinations);
+          for(let d of data) {
+            // console.log(d["Places"][0]["IataCode"]);
+            // console.log(d["Dates"]["OutboundDates"][0]["PartialDate"]);
+            // console.log(d["Dates"]["InboundDates"][0]["PartialDate"]);
+            let dest = d["Places"][1]["IataCode"];
+            if(dest == this.departures[0]){
+              dest = d["Places"][0]["IataCode"];
+            }
+            else{
+              dest = d["Places"][1]["IataCode"];
+            }
+            let url = "https://www.skyscanner.com/transport/flights/" + this.getUrlString(d["Dates"]["OutboundDates"][0]["PartialDate"], d["Dates"]["InboundDates"][0]["PartialDate"], dest);
+            this.isDataError = false;
             this.flightList.addFlight(
               this.departures[0],
               dest,
-              data["Quotes"][0]["MinPrice"],
-              data["Carriers"][0]["Name"],
-              this.parseJsonDate(data["Quotes"][0]["QuoteDateTime"]),
-              date.departureDate,
-              date.returnDate,
+              d["Quotes"][0]["MinPrice"],
+              d["Carriers"][0]["Name"],
+              this.parseJsonDate(d["Quotes"][0]["QuoteDateTime"]),
+              d["Dates"]["OutboundDates"][0]["PartialDate"],
+              d["Dates"]["InboundDates"][0]["PartialDate"],
               url
-           );
-
-          },
-          err => console.log(err),
-          () => {
-
-            if(dest == this.destinations[this.destinations.length-1] && date == this.dateList[this.dateList.length-1]) {
-              this.buildChart(dest, 2);
-            }
+            );
+            newDest = d["Places"][0]["IataCode"];
           }
-        );
-      }
+          this.buildChart(newDest, 3);
+        }
+        )
 
-
-  }
-
-  refreshFlights(){
-    this.flightList = new FlightList;
-    this.dates = [];
-    this.prices = [];
-    for(let dest of this.destinations ){
-      for(let date of this.dateList){
-        // console.log(date.departureDate);
-        // console.log(date.returnDate);
-        this.dataService.search(this.departures[0], dest, date.departureDate, date.returnDate)
-          .subscribe(
-            data => {
-              let url = "https://www.skyscanner.com/transport/flights/" + this.getUrlString(date.departureDate, date.returnDate, dest);
-              this.flightList.addFlight(
-                this.departures[0],
-                dest,
-                data["Quotes"][0]["MinPrice"],
-                data["Carriers"][0]["Name"],
-                this.parseJsonDate(data["Quotes"][0]["QuoteDateTime"]),
-                date.departureDate,
-                date.returnDate,
-                url
-              );
-
-            },
-            err => console.log(err),
-            () => {
-              if(dest == this.destinations[this.destinations.length-1] && date == this.dateList[this.dateList.length-1]) {
-                this.buildChart(dest, 3);
-              }
-            }
-          );
-      }
-    }
 
   }
 
@@ -435,7 +459,6 @@ export class MainSearchComponent {
   }
 
   remove(name: string, isDest:boolean) : void {
-    //console.log("REMOVE ISDEST:" + isDest);
     if(isDest) {
       var index = this.destinations.indexOf(name, 0);
       if (index !== undefined) {

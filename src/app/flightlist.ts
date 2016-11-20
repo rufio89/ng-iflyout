@@ -17,6 +17,7 @@ export class FlightList {
     this.flightList.push(new Flight(departureAirport, arrivalAirport, price, airline, priceTime, departureDate, returnDate, url));
   }
 
+
   getListByAirport(airportName): Flight[]{
     let currentList: Flight[];
     currentList = [];
@@ -28,10 +29,6 @@ export class FlightList {
     currentList.sort(function(a,b){
       return new Date(a.departureDate).getTime() - new Date(b.departureDate).getTime();
     });
-    console.log("THIS.FlightList");
-    console.dir(this.flightList);
-    console.log("THIS.CurrentList");
-    console.dir(currentList);
     return currentList;
   }
 
@@ -41,16 +38,13 @@ export class FlightList {
       let aList = this.getListByAirport(destination);
       let rColor = this.colors[Math.floor(Math.random() * (this.colors.length))];
       this.colors.splice(this.colors.indexOf(rColor),1);
-      console.log(rColor);
-      console.log("ALIST: " );
-      console.dir(aList);
+
 
       this.seriesObjects.push({name: destination, color: rColor, data: []});
 
       for(let j=0; j<aList.length; j++){
         this.seriesObjects[this.seriesObjects.length-1].data.push({y:aList[j].price, url:aList[j].url, airline:aList[j].airline, destination: aList[j].arrivalAirport, departureDate: aList[j].departureDate});
       }
-
     console.dir(this.seriesObjects);
     return this.seriesObjects;
   }
@@ -58,17 +52,17 @@ export class FlightList {
   refreshSeriesData(): {name: string, data: {y: number, url: string, airline: string, destination:string, departureDate:string }[]}[]{
     this.seriesObjects = [];
     let destinations = this.getUniqueDestinations();
-    console.log("destinations: " + destinations);
+    console.log(destinations);
     for(let i= 0; i < destinations.length; i++){
       let aList = this.getListByAirport(destinations[i]);
       this.seriesObjects.push({name:aList[i].arrivalAirport,color: this.colors[Math.floor(Math.random() * (this.colors.length))], data: []});
-      console.log("aList: " + aList);
+
       for(let j=0; j<aList.length; j++){
         this.seriesObjects[i].data.push({y:aList[j].price, url:aList[j].url, airline:aList[j].airline, destination: aList[j].arrivalAirport, departureDate: aList[j].departureDate});
       }
 
     }
-
+    console.dir(this.seriesObjects);
     return this.seriesObjects;
   }
 
@@ -83,6 +77,8 @@ export class FlightList {
 
   getUniqueDestinations(): string[]{
     let flags = [], output = [], l = this.flightList.length, i;
+    console.log("This flightlist unique");
+    console.dir(this.flightList);
     for( i=0; i<l; i++) {
       if( flags[this.flightList[i].arrivalAirport]) continue;
       flags[this.flightList[i].arrivalAirport] = true;

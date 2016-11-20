@@ -1,0 +1,11 @@
+<div class="ui fixed inverted menu">
+  <div class="ui container">
+    <a *ngFor="let nav of navs"
+       routerLink="{{nav.url}}"
+       class="item">
+      {{nav.contents}}
+    </a>
+  </div>
+</div>
+
+<router-outlet></router-outlet>
