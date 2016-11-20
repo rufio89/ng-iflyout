@@ -8,7 +8,7 @@ export class AirportService {
 
   search(){
     //https://54.213.227.211:3000/api/get_airports
-      let apiUrl: string = "https://54.213.227.211/api/get_airports";
+      let apiUrl: string = "http://localhost:3000/api/get_airports";
     return this.http.get(apiUrl)
       .map(response => response.json());
 
