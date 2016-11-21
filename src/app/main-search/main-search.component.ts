@@ -342,17 +342,14 @@ export class MainSearchComponent {
     let newDest = [];
     newDest.push(dest);
 
-      //
-      // for(let date of this.dateList){
+
         Observable.forkJoin(this.dataService.search(this.dateList, this.departures[0], dest, newDest, false))
           .subscribe(
             data =>{
               // console.log(data);
               for(let d of data) {
-                // console.log(d["Places"][0]["IataCode"]);
-                // console.log(d["Dates"]["OutboundDates"][0]["PartialDate"]);
-                // console.log(d["Dates"]["InboundDates"][0]["PartialDate"]);
-                let url = "https://www.skyscanner.com/transport/flights/" + this.getUrlString(d["Dates"]["OutboundDates"][0]["PartialDate"], d["Dates"]["InboundDates"][0]["PartialDate"], dest);
+                if (d["Quotes"].length>0 && d["Dates"]["InboundDates"].length>0) {
+                  let url = "https://www.skyscanner.com/transport/flights/" + this.getUrlString(d["Dates"]["OutboundDates"][0]["PartialDate"], d["Dates"]["InboundDates"][0]["PartialDate"], dest);
                   this.isDataError = false;
                   this.flightList.addFlight(
                     this.departures[0],
@@ -364,6 +361,7 @@ export class MainSearchComponent {
                     d["Dates"]["InboundDates"][0]["PartialDate"],
                     url
                   );
+                }
               }
               this.buildChart(dest, 2);
 
@@ -379,38 +377,37 @@ export class MainSearchComponent {
   refreshFlights(){
     this.flightList = FlightList[0];
     this.flightList = new FlightList;
-    console.log("After remove flightlist");
-    console.dir(this.flightList);
+
     let newDest: string = "";
     Observable.forkJoin(this.dataService.search(this.dateList, this.departures[0], "", this.destinations, true))
       .subscribe(
         data =>{
-          console.log(data);
-          console.log("Destinations: " + this.destinations);
           for(let d of data) {
-            // console.log(d["Places"][0]["IataCode"]);
-            // console.log(d["Dates"]["OutboundDates"][0]["PartialDate"]);
-            // console.log(d["Dates"]["InboundDates"][0]["PartialDate"]);
-            let dest = d["Places"][1]["IataCode"];
-            if(dest == this.departures[0]){
+            let dest = "";
+            if(d["Quotes"].length>0 && d["Dates"]["InboundDates"].length>0){
+              dest = d["Places"][1]["IataCode"];
+            if (dest == this.departures[0]) {
               dest = d["Places"][0]["IataCode"];
             }
-            else{
+            else {
               dest = d["Places"][1]["IataCode"];
             }
-            let url = "https://www.skyscanner.com/transport/flights/" + this.getUrlString(d["Dates"]["OutboundDates"][0]["PartialDate"], d["Dates"]["InboundDates"][0]["PartialDate"], dest);
-            this.isDataError = false;
-            this.flightList.addFlight(
-              this.departures[0],
-              dest,
-              d["Quotes"][0]["MinPrice"],
-              d["Carriers"][0]["Name"],
-              this.parseJsonDate(d["Quotes"][0]["QuoteDateTime"]),
-              d["Dates"]["OutboundDates"][0]["PartialDate"],
-              d["Dates"]["InboundDates"][0]["PartialDate"],
-              url
-            );
-            newDest = d["Places"][0]["IataCode"];
+
+
+              let url = "https://www.skyscanner.com/transport/flights/" + this.getUrlString(d["Dates"]["OutboundDates"][0]["PartialDate"], d["Dates"]["InboundDates"][0]["PartialDate"], dest);
+              this.isDataError = false;
+              this.flightList.addFlight(
+                this.departures[0],
+                dest,
+                d["Quotes"][0]["MinPrice"],
+                d["Carriers"][0]["Name"],
+                this.parseJsonDate(d["Quotes"][0]["QuoteDateTime"]),
+                d["Dates"]["OutboundDates"][0]["PartialDate"],
+                d["Dates"]["InboundDates"][0]["PartialDate"],
+                url
+              );
+              newDest = d["Places"][0]["IataCode"];
+            }
           }
           this.buildChart(newDest, 3);
         }
