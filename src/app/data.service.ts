@@ -18,7 +18,7 @@ export class DataService {
     let apiURL: string = "";
     if(!isRemoval) {
       for (let date of dateList) {
-        apiURL = "http://partners.api.skyscanner.net/apiservices/xd/browsedates/v1.0/US/USD/EN/" + departureAirport + "/" + arrivalAirport + "/" + date.departureDate + "/" + date.returnDate + "?apiKey=&dataType=jsonp&callback=JSONP_CALLBACK";
+        apiURL = "http://partners.api.skyscanner.net/apiservices/xd/browsedates/v1.0/US/USD/EN/" + departureAirport + "/" + arrivalAirport + "/" + date.departureDate + "/" + date.returnDate + "?apiKey=if781234598447854911313432786612&dataType=jsonp&callback=JSONP_CALLBACK";
         this.data.push(this.jsonp.get(apiURL, {headers: headers}).map(res => res.json()));
       }
     }
@@ -27,7 +27,7 @@ export class DataService {
       console.log("IsRemoval: " + isRemoval);
       for(let dest of destinations ) {
         for (let date of dateList) {
-          apiURL = "http://partners.api.skyscanner.net/apiservices/xd/browsedates/v1.0/US/USD/EN/" + departureAirport + "/" + dest + "/" + date.departureDate + "/" + date.returnDate + "?apiKey=&dataType=jsonp&callback=JSONP_CALLBACK";
+          apiURL = "http://partners.api.skyscanner.net/apiservices/xd/browsedates/v1.0/US/USD/EN/" + departureAirport + "/" + dest + "/" + date.departureDate + "/" + date.returnDate + "?apiKey=if781234598447854911313432786612&dataType=jsonp&callback=JSONP_CALLBACK";
           this.data.push(this.jsonp.get(apiURL, {headers: headers}).map(res => res.json()));
 
         }

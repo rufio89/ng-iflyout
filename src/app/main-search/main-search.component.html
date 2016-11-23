@@ -1,102 +1,105 @@
-<div id="flight-form" class="ui container raised">
-  <h2>Weekend Flight Search</h2>
-  <form [formGroup]="searchForm"  class="ui form">
-    <div class="inline fields">
-      <label for="departDayOfWeek">Departure Day of Week (return Sunday)</label>
-      <div *ngFor="let day of daysOfWeek.slice(1,6)">
-        <div class="field">
-          <div class="ui radio checkbox">
-            <input type="radio" formControlName="day" id="day{{day.id}}" value="{{ day.dayName }}" (click)="updateDay(day.id)">
-            <label>{{ day.dayName }}</label>
+<div (window:resize)="onResize($event)">
+  <div id="flight-form" class="ui container raised">
+    <h2>Weekend Flight Search</h2>
+    <form [formGroup]="searchForm"  class="ui form">
+      <div id="radio-days">
+        <label for="departDayOfWeek">Departure Day of Week (return Sunday)</label>
+        <div *ngFor="let day of daysOfWeek.slice(1,6)">
+          <div class="field">
+            <div class="ui radio checkbox">
+              <input type="radio" class="main-radio" formControlName="day" id="day{{day.id}}" value="{{ day.dayName }}" (click)="updateDay(day.id)">
+              <label>{{ day.dayName }}</label>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <div *ngIf="!week.valid && week.touched">
-      <div class="ui form error">
-        <div class="ui error message">
-          <p>Enter a valid number of weeks</p>
+      <div *ngIf="!week.valid && week.touched">
+        <div class="ui form error">
+          <div class="ui error message">
+            <p>Enter a valid number of weeks</p>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="inline fields">
-      <label for="departNumOfMonths">Number of Months Looking Forward</label>
-      <div *ngFor="let monthNum of numOfMonths" >
-        <div class="field">
-          <div class="ui radio checkbox">
+      <div id="radio-months">
+        <label for="departNumOfMonths">Number of Months Looking Forward</label>
+        <div *ngFor="let monthNum of numOfMonths" >
+          <div class="field">
+            <div class="ui radio checkbox">
 
-            <input type="radio" formControlName="week" id="week{{monthNum.id}}"  value="{{monthNum.nums}}" (click)="updateMonth(monthNum.id)">
-            <label>{{ monthNum.nums }}</label>
+              <input type="radio" formControlName="week" id="week{{monthNum.id}}"  value="{{monthNum.nums}}" (click)="updateMonth(monthNum.id)">
+              <label>{{ monthNum.nums }}</label>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <div *ngIf="departures.length==0 && departureAirport.touched">
-      <div class="ui form error">
-        <div class="ui error message">
-          <p>Enter a valid Departure Airport</p>
+      <div *ngIf="departures.length==0 && departureAirport.touched">
+        <div class="ui form error">
+          <div class="ui error message">
+            <p>Enter a valid Departure Airport</p>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="field">
-        <label for="departureAirport">Departure Airport</label>
-      <ng2-completer #newDep formControlName="departureAirport" type="text" [dataService]="departureService" id="departureAirport"  placeholder="Chicago" (keydown.enter)="keypressHandler($event, newDep.value, false); newDep.value = ''"></ng2-completer>
-    </div>
-    <div id="departureList">
-      <div *ngFor="let dep of departures" class='ui compact segment'>
-        <span class='left-airport'>
-          <i class='checkmark icon'></i>{{ dep }}
-        </span>
-        <span class='right-airport'>
-        <i (click)="remove(dep, false)" class='remove icon' ></i>
-        </span>
+      <div class="field">
+          <label for="departureAirport">Departure Airport</label>
+        <ng2-completer #newDep formControlName="departureAirport" type="text" [dataService]="departureService" id="departureAirport"  placeholder="Chicago" (keydown.enter)="keypressHandler($event, newDep.value, false); newDep.value = ''"></ng2-completer>
       </div>
-    </div>
-    <div *ngIf="destinations.length==0 && arrivalAirport.touched">
-      <div class="ui form error">
-        <div class="ui error message">
-          <p>Enter a valid Arrival Airport</p>
+      <div id="departureList">
+        <div *ngFor="let dep of departures" class='ui compact segment'>
+          <span class='left-airport'>
+            <i class='checkmark icon'></i>{{ dep }}
+          </span>
+          <span class='right-airport'>
+          <i (click)="remove(dep, false)" class='remove icon' ></i>
+          </span>
         </div>
       </div>
-    </div>
-    <div *ngIf="sameAirport==true">
-      <div class="ui form error">
-        <div class="ui error message">
-          <p>Can't have same departure and arrival airports.</p>
+      <div *ngIf="destinations.length==0 && arrivalAirport.touched">
+        <div class="ui form error">
+          <div class="ui error message">
+            <p>Enter a valid Arrival Airport</p>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="field">
-      <label for="arrivalAirport">Arrival Airports (You can enter more than one)</label>
-      <ng2-completer #newDest formControlName="arrivalAirport" [(ngModel)]="currentDestination" type="text" [dataService]="arrivalService" placeholder ="Los Angeles" id="arrivalAirport" (keyup.enter)="keypressHandler($event, newDest.value, true); newDest.value = ''"></ng2-completer>
-    </div>
-    <div id="arrivalList">
-      <div *ngFor="let dest of destinations" class='ui compact segment'>
-        <span class='left-airport'>
-          <i class='checkmark icon'></i>{{ dest }}
-        </span>
-        <span class='right-airport'>
-        <i (click)="remove(dest, true)" class='remove icon' ></i>
-        </span>
-      </div>
-    </div>
-    <div *ngIf="!day.valid && day.touched">
-      <div class="ui form error">
-        <div class="ui error message">
-          <p>Enter a valid day of the week</p>
+      <div *ngIf="sameAirport==true">
+        <div class="ui form error">
+          <div class="ui error message">
+            <p>Can't have same departure and arrival airports.</p>
+          </div>
         </div>
       </div>
-    </div>
-    <!--<button class="ui grey basic button" (click)="onSubmit(searchForm.value)" type="submit">Submit</button>-->
-  </form>
-</div>
-<div *ngIf="isDataError">
-  <div class="ui form error">
-    <div class="ui error message">
-      <p>{{ dataError }}</p>
+      <div class="field">
+        <label for="arrivalAirport">Arrival Airports (You can enter more than one)</label>
+        <ng2-completer #newDest formControlName="arrivalAirport" [(ngModel)]="currentDestination" type="text" [dataService]="arrivalService" placeholder ="Los Angeles" id="arrivalAirport" (keyup.enter)="keypressHandler($event, newDest.value, true); newDest.value = ''"></ng2-completer>
+      </div>
+      <div id="arrivalList">
+        <div *ngFor="let dest of destinations" class='ui compact segment'>
+          <span class='left-airport'>
+            <i class='checkmark icon'></i>{{ dest }}
+          </span>
+          <span class='right-airport'>
+          <i (click)="remove(dest, true)" class='remove icon' ></i>
+          </span>
+        </div>
+      </div>
+      <div *ngIf="!day.valid && day.touched">
+        <div class="ui form error">
+          <div class="ui error message">
+            <p>Enter a valid day of the week</p>
+          </div>
+        </div>
+      </div>
+      <!--<button class="ui grey basic button" (click)="onSubmit(searchForm.value)" type="submit">Submit</button>-->
+    </form>
+  </div>
+  <div *ngIf="isDataError">
+    <div class="ui form error">
+      <div class="ui error message">
+        <p>{{ dataError }}</p>
+      </div>
     </div>
   </div>
-</div>
-<app-search-results [flightList]="flightList" [options]="options">
+  <app-search-results [flightList]="flightList" [options]="options">
 
-</app-search-results>
+  </app-search-results>
+</div>
+

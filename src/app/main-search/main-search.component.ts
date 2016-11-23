@@ -417,6 +417,22 @@ export class MainSearchComponent {
   }
 
 
+  onResize(event){
+    let windowWidth = window.innerWidth;
+    let windowHeight = window.innerHeight;
+    let radioDays = document.getElementById("radio-days");
+    let radioMonths = document.getElementById("radio-months");
+
+    if(windowWidth < 760){
+      radioDays.className = "grouped fields";
+      radioMonths.className = "grouped fields";
+
+    }
+    else{
+      radioDays.className = "inline fields";
+      radioMonths.className = "inline fields";
+    }
+  }
 
 
 
